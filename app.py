@@ -1,8 +1,6 @@
 import json
 import flet as ft
-from manipulador import * 
-
-
+from manipulador import Manipulador
 
 def main(page: ft.Page):
     manipulador = Manipulador()
@@ -20,10 +18,9 @@ def main(page: ft.Page):
         page.update()
 
     def cadastro_usuario(e):
-       
         try:
-            print(f'Arquivo aberto: {abrir_arquivo}.json.\n')
-            usuarios = Manipulador.abrir_arquivo(abrir_arquivo)
+            nome_arquivo = nome_arquivo_input.value
+            usuarios = manipulador.abrir_arquivo(nome_arquivo)
             p_codigo = len(usuarios)
             p_nome = ft.TextField(label="Informe o nome:")
             p_cpf = ft.TextField(label="Informe o CPF:")
@@ -39,42 +36,41 @@ def main(page: ft.Page):
                     "profissao": p_profissao.value
                 }
                 usuarios.append(usuario)
-                print(f'Usuário salvo: {usuario}')
-                # Aqui você pode adicionar a lógica para salvar os dados    no arquivo
-                # print(m.salvar_dados(usuarios, abrir_arquivo))
+                manipulador.salvar_dados(usuarios, nome_arquivo)
+                resultado_text.value = f'Usuário salvo: {usuario}'
+                page.update()
 
-            salvar_button = ft.ElevatedButton(text="Salvar",    on_click=salvar_usuario)
+            salvar_button = ft.ElevatedButton(text="Salvar", on_click=salvar_usuario)
 
             page.add(p_nome, p_cpf, p_email, p_profissao, salvar_button)
 
         except Exception as e:
-            print(f'Não foi possível realizar a operação. {e}.')
+            resultado_text.value = f'Não foi possível realizar a operação. {e}'
+            page.update()
 
-  
     def alterar_dados_usuario(e):
         try:
-            print(f'Arquivo aberto: {abrir_arquivo}.json.\n')
+            nome_arquivo = nome_arquivo_input.value
+            usuarios = manipulador.abrir_arquivo(nome_arquivo)
 
-            usuarios = Manipulador.abrir_arquivo(abrir_arquivo)    
+            codigo = int(codigo_input.value)
 
-            codigo = int(input('Informe o código do usuário que deseja  alterar os dados: '))
-            
+            if codigo < len(usuarios):
+                for campo in usuarios[codigo]:
+                    novo_dado = input(f'Informe o novo dado do campo {campo} ou aperte "Enter" caso deseje manter o mesmo valor: ')
+                    if novo_dado:
+                        usuarios[codigo][campo] = novo_dado
 
-            for campo in usuarios[codigo]:
-                print(f'Valor atual do campo: {campo}: {usuarios[codigo].   get(campo)}')
-                novo_dado = input(f'Informe o novo dado do campo {campo}    ou aperte "Enter" caso deseje manter o mesmo valor: ')
-                if novo_dado:
-                    usuarios[codigo][campo] = novo_dado
-                else:
-                    pass
-                
-            print(manipulador.salvar_dados(usuarios, abrir_arquivo))
-        
+                manipulador.salvar_dados(usuarios, nome_arquivo)
+                resultado_text.value = 'Dados alterados com sucesso.'
+            else:
+                resultado_text.value = 'Código de usuário inválido.'
+
         except Exception as e:
-            print('Não foi possível alterar os dados.')
+            resultado_text.value = 'Não foi possível alterar os dados.'
         
         finally:
-            pass
+            page.update()
 
     def deletar_usuario(e):
         nome_arquivo = nome_arquivo_input.value
@@ -82,8 +78,6 @@ def main(page: ft.Page):
         resultado = manipulador.deletar_usuario(nome_arquivo, codigo)
         resultado_text.value = resultado
         page.update()
-
-
 
     nome_arquivo_input = ft.TextField(label="Nome do Arquivo")
     codigo_input = ft.TextField(label="Código do Usuário")
@@ -99,7 +93,6 @@ def main(page: ft.Page):
             ft.ElevatedButton("Alterar Usuário", on_click=alterar_dados_usuario),
             ft.ElevatedButton("Deletar Usuário", on_click=deletar_usuario),
         ]),
-        cadastro_usuario, salvar_button,
         codigo_input,
         resultado_text
     )

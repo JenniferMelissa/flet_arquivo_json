@@ -50,4 +50,3 @@ class Manipulador:
     #destrutor
     def __del__(self):
         return f'Manipulador destruído.'
-    
